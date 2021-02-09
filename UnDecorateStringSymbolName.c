@@ -2,9 +2,7 @@
 #include <stdint.h>
 #include <ctype.h>
 
-#ifdef _MSC_VER
-#define restrict __restrict 
-#endif
+#include "UnDecorateStringSymbolName.h"
 
 #define BETWEEN_A_P(_c) ('A' <= (_c) && (_c) <= 'P')
 
