@@ -12,9 +12,9 @@ uint32_t UnDecorateStringSymbolName(
     const char* restrict name,
     unsigned char* restrict outputString,
     uint32_t maxStringLength,
-    _Bool* restrict pisDoubleBytes)
+    _Bool* restrict pisUtf16BE)
 {
-    if (pisDoubleBytes == NULL)
+    if (pisUtf16BE == NULL)
         return 0;
 
     _Bool isSingleByte = strncmp(name, "??_C@_0", 7) == 0;
@@ -23,7 +23,7 @@ uint32_t UnDecorateStringSymbolName(
     if (isSingleByte || isDoubleByte)
     {
         const char* curPos = name + strlen("??_C@_1");
-        const char* atmarkFound = strchr(curPos, '@'); // skip encoded number.
+        const char* atmarkFound = isdigit(curPos[0]) ? curPos : strchr(curPos, '@'); // skip encoded number.
         if (atmarkFound)
         {
             curPos = atmarkFound + 1;
@@ -50,7 +50,7 @@ uint32_t UnDecorateStringSymbolName(
                         }
                         else if (remains > 0 && ('0' <= curPos[0] && curPos[0] <= '9'))
                         {
-                            static const unsigned char x[] = { ',','/','\\',':','.',' ',0x0B,0x0A,'\'','-' };
+                            static const unsigned char x[] = { ',','/','\\',':','.',' ',0x0A,0x0B,'\'','-' };
                             c = x[curPos[0] - '0'];
                             ++curPos;
                             --remains;
@@ -74,12 +74,12 @@ uint32_t UnDecorateStringSymbolName(
                     else
                         return 0; // overflow
                 }
-                *pisDoubleBytes = isDoubleByte;
+                *pisUtf16BE = isDoubleByte;
                 return outPos;
             }
         }
     }
-    *pisDoubleBytes = 0;
+    *pisUtf16BE = 0;
     if (maxStringLength)
         strncpy_s(outputString, maxStringLength, name, maxStringLength - 1);
     return (uint32_t)((unsigned char*)(memchr(outputString, 0x00, maxStringLength)) - outputString);
